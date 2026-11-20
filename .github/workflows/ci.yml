@@ -12,6 +12,8 @@ jobs:
         with: { node-version: '${{ matrix.node }}' }
       - run: npm ci --omit=dev || npm i @noble/curves@2.4.0 tweetnacl
       - run: node verify.mjs
+      - name: OpenSSL version probe
+        run: node -e "console.log('CI OpenSSL:', process.versions.openssl)"
       - name: OpenSSL CLI leg
         run: |
           python3 - << 'PY' || true

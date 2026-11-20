@@ -34,6 +34,12 @@ V = [
   lambda f: bool(f[0]) and 'fail closed' in f[0].lower()),
  ('llama-stack (positive baseline)','baseline','meta-llama/llama-stack',['src/ogx/providers/utils/tools/mcp.py'],
   lambda f: bool(f[0]) and 'non-pinned hosts are not allowed' in f[0]),
+ ('llama_index #24353','offensive','run-llama/llama_index',['llama-index-integrations/tools/llama-index-tools-code-interpreter/llama_index/tools/code_interpreter/base.py'],
+  lambda f: bool(f[0]) and 'subprocess.run([sys.executable, "-c", code], capture_output=True)' in f[0] and 'executed in isolation' in f[0]),
+ ('kimi-code #5198 (fetch-url SSRF layer)','offensive','MoonshotAI/kimi-code',['packages/agent-core-v2/src/app/web/providers/local-fetch-url.ts','packages/agent-core-v2/src/agent/permissionPolicy/policies/default-tool-approve.ts'],
+  lambda f: bool(f[0]) and "'FetchURL'" in f[1] and 'validateFetchUrl' in f[0] and '169.254' not in f[0] and '127.0.0.1' not in f[0]),
+ ('kimi-code permission mode (positive baseline)','baseline','MoonshotAI/kimi-code',['packages/app-core/src/lib/permissionMode.ts'],
+  lambda f: bool(f[0]) and "?? 'manual'" in f[0]),
 ]
 if __name__ == '__main__':
     R = []
@@ -46,5 +52,5 @@ if __name__ == '__main__':
     p = sum(1 for r in R if r['assert_ok'])
     out = {'ts': __import__('time').strftime('%Y-%m-%dT%H:%M%z'), 'pass': p, 'total': len(R), 'rows': R}
     json.dump(out, open('ten-vendors-latest.json', 'w'), indent=1)
-    print(f'===== TEN-VENDORS: {p}/{len(R)} PASS =====')
+    print(f'===== VENDOR-MATRIX: {p}/{len(R)} PASS =====')
     sys.exit(0 if p == len(R) else 1)

@@ -1,7 +1,7 @@
 {
- "ts": "2026-11-20T14:44+0800",
- "pass": 10,
- "total": 10,
+ "ts": "2026-11-20T20:54+0800",
+ "pass": 13,
+ "total": 13,
  "rows": [
   {
    "vendor": "gemini-cli #30369",
@@ -92,6 +92,34 @@
    "assert_ok": true,
    "check_files": [
     "src/ogx/providers/utils/tools/mcp.py"
+   ]
+  },
+  {
+   "vendor": "llama_index #24353",
+   "type": "offensive",
+   "repo": "run-llama/llama_index",
+   "assert_ok": true,
+   "check_files": [
+    "llama-index-integrations/tools/llama-index-tools-code-interpreter/llama_index/tools/code_interpreter/base.py"
+   ]
+  },
+  {
+   "vendor": "kimi-code #5198 (fetch-url SSRF layer)",
+   "type": "offensive",
+   "repo": "MoonshotAI/kimi-code",
+   "assert_ok": true,
+   "check_files": [
+    "packages/agent-core-v2/src/app/web/providers/local-fetch-url.ts",
+    "packages/agent-core-v2/src/agent/permissionPolicy/policies/default-tool-approve.ts"
+   ]
+  },
+  {
+   "vendor": "kimi-code permission mode (positive baseline)",
+   "type": "baseline",
+   "repo": "MoonshotAI/kimi-code",
+   "assert_ok": true,
+   "check_files": [
+    "packages/app-core/src/lib/permissionMode.ts"
    ]
   }
  ]

@@ -1,0 +1,98 @@
+{
+ "ts": "2026-11-20T14:44+0800",
+ "pass": 10,
+ "total": 10,
+ "rows": [
+  {
+   "vendor": "gemini-cli #30369",
+   "type": "offensive",
+   "repo": "google-gemini/gemini-cli",
+   "assert_ok": true,
+   "check_files": [
+    "packages/core/src/tools/mcp-client-manager.ts"
+   ]
+  },
+  {
+   "vendor": "openai-agents #6094",
+   "type": "offensive",
+   "repo": "openai/openai-agents-python",
+   "assert_ok": true,
+   "check_files": [
+    "src/agents/mcp/server.py"
+   ]
+  },
+  {
+   "vendor": "QwenLM qwen-code (vendor-confirmed P1)",
+   "type": "offensive",
+   "repo": "QwenLM/qwen-code",
+   "assert_ok": true,
+   "check_files": [
+    "packages/core/src/tools/mcp-client-manager.ts"
+   ]
+  },
+  {
+   "vendor": "amazon-q",
+   "type": "offensive",
+   "repo": "aws/amazon-q-developer-cli",
+   "assert_ok": true,
+   "check_files": [
+    "crates/chat-cli/src/util/tool_permission_checker.rs"
+   ]
+  },
+  {
+   "vendor": "autogen #8498",
+   "type": "offensive",
+   "repo": "microsoft/autogen",
+   "assert_ok": true,
+   "check_files": [
+    "python/packages/autogen-ext/src/autogen_ext/agents/openai/_openai_agent.py"
+   ]
+  },
+  {
+   "vendor": "deer-flow #8431",
+   "type": "offensive",
+   "repo": "bytedance/deer-flow",
+   "assert_ok": true,
+   "check_files": [
+    "backend/packages/harness/deerflow/agents/lead_agent/agent.py",
+    "backend/packages/harness/deerflow/config/hitl_approval_config.py"
+   ]
+  },
+  {
+   "vendor": "semantic-kernel (positive baseline)",
+   "type": "baseline",
+   "repo": "microsoft/semantic-kernel",
+   "assert_ok": true,
+   "check_files": [
+    "python/semantic_kernel/agents/azure_ai/agent_thread_actions.py"
+   ]
+  },
+  {
+   "vendor": "codex CLI (positive baseline)",
+   "type": "baseline",
+   "repo": "openai/codex",
+   "assert_ok": true,
+   "check_files": [
+    "codex-rs/core/src/tools/approvals.rs"
+   ]
+  },
+  {
+   "vendor": "claude-code sec-default (positive baseline)",
+   "type": "baseline",
+   "repo": "anthropics/claude-code",
+   "assert_ok": true,
+   "check_files": [
+    "mods/sec-default/README.md"
+   ]
+  },
+  {
+   "vendor": "llama-stack (positive baseline)",
+   "type": "baseline",
+   "repo": "meta-llama/llama-stack",
+   "assert_ok": true,
+   "check_files": [
+    "src/ogx/providers/utils/tools/mcp.py"
+   ]
+  }
+ ]
+}

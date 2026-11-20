@@ -96,3 +96,14 @@ CC0 on data means your rows become public domain on merge, credited by handle.
 - Environment: Linux 5.10 x86_64, Node 24.21.0, OpenSSL 3.5.7/3.5.8, pyca 44.0.3, tweetnacl latest (2026-11). Verdicts are environment-tagged, not universal claims.
 - Go `crypto/ed25519` was characterized in earlier runs (accepts identity-key forgeries; enumerable) but is **not** in this v1 matrix — no Go toolchain in the build environment. v2 will add it, plus Rust ed25519-dalek.
 - `zip215:false` on noble-curves rejects all small-order vectors — the strict path works and is documented upstream; the divergence is about **defaults and cross-library inconsistency**, not a bypass claim.
+
+
+## Ten-vendor approval-semantic assertion matrix (2026-11-20)
+
+Beyond the Ed25519 divergence vectors, this repo anchors a cross-framework study of agent tool-approval defaults:
+
+- `ten-vendors-check.py` — 10-vendor assertion matrix: 6 offensive lines (fail-open patterns present) + 4 positive baselines (fail-closed implementations worth copying). Each PASS = the vendor's public evidence anchor still holds at the referenced code.
+- Run: `GH_TOKEN=<pat> python3 ten-vendors-check.py` (GitHub API only; no vendor code execution; raw-CDN independent).
+- Result snapshot: `ten-vendors-latest.json`.
+- Disclosure lines: google-gemini/gemini-cli #30369 · openai/openai-agents-python #6094 · microsoft/autogen #8498 · bytedance/deer-flow #8431 · QwenLM qwen-code (vendor-confirmed P1) · AWS amazon-q. Positive baselines: microsoft/semantic-kernel, openai/codex, anthropics/claude-code `mods/sec-default`, meta-llama/llama-stack.
+- Every claim passed our two-pass recheck (9 machine verifications + 9 reviewer verifications) before publication; line-number corrections are published as public comments on the issues themselves.

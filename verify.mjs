@@ -39,7 +39,8 @@ for (const v of V.vectors) {
   const M = Buffer.from(v.message_variant_hex || V.base_message_hex, 'hex');
   const hbuf = createHash('sha512').update(Buffer.concat([sig.subarray(0, 32), Buffer.from(v.encoding_hex, 'hex'), M])).digest();
   let kv = 0n; for (let i = 63; i >= 0; i--) kv = (kv << 8n) | BigInt(hbuf[i]); kv %= ed25519.Point.CURVE().n;
-  hard(`equation S·G==R+k·A  ${v.cls}`, ed25519.Point.BASE.multiply(Sv).equals(Rv.add(A.multiply(kv))));
+  const kA = kv === 0n ? ed25519.Point.ZERO : A.multiply(kv); // k≡0 mod ℓ is the degeneracy itself
+  hard(`equation S·G==R+k·A  ${v.cls}`, ed25519.Point.BASE.multiply(Sv).equals(Rv.add(kA)));
 }
 
 // 4. verdict replay

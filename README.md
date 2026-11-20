@@ -42,11 +42,18 @@ Every vector in `vectors.json` ships with its message variant and the equation c
 | `verify.mjs` | replay harness: asserts vectors.json/rows.json consistency and re-executes the verdicts on your stack | MIT |
 | `manifest.sha256` | content lock | — |
 
-## Reproduce
+## Reproduce (30-second PoC)
 
 ```bash
-npm i @noble/curves@2.4.0 tweetnacl && node verify.mjs
+git clone https://github.com/DSHCorrectover/verifier-divergence-corpus.git
+cd verifier-divergence-corpus
+npm i @noble/curves@2.4.0 tweetnacl
+node verify.mjs
 ```
+
+Expected output: `ALL PASS — divergence reproduced on this stack.` (verified on a fresh public clone 2026-11-20; CI runs the same harness on Node 20/22/24 on every push.)
+
+The harness checks, in order: ① SHA-256 manifest lock on vectors/rows ② every encoding is mathematically small-order (8P = I) ③ every forgery satisfies the verification equation S·G == R + k·A ④ re-runs noble (3 option sets), tweetnacl and node:crypto verdicts against the recorded rows on **your** stack — any mismatch tells you *your* verifier's policy differs.
 
 Verdicts for `node:crypto`, OpenSSL CLI and pyca replay with system OpenSSL / Python (`openssl pkeyutl`, `cryptography`).
 

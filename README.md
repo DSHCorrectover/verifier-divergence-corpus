@@ -1,5 +1,8 @@
 # verifier-divergence-corpus
 
+> **Positioning**: We certify that an agent's action did not exceed the authorization it was actually granted — with evidence a third party can re-verify offline.
+> （我们证明：Agent 的每一个动作没有越出它实际被授予的授权——以任何第三方都能离线重验的证据为准。）— Independent Authorization Verification / Court-ready Evidence
+
 **Ed25519 small-order zero-key forgery — cross-verifier verdict divergence dataset (v1, 2026-11-20)**
 
 ## One-page thesis

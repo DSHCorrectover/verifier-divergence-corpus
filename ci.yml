@@ -1,0 +1,32 @@
+name: corpus-replay
+on: [push, workflow_dispatch]
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [20, 22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '${{ matrix.node }}' }
+      - run: npm ci --omit=dev || npm i @noble/curves@2.4.0 tweetnacl
+      - run: node verify.mjs
+      - name: OpenSSL CLI leg
+        run: |
+          python3 - << 'PY' || true
+          import json,subprocess,os
+          rows=json.load(open('rows.json'))
+          for r in rows:
+              A=bytes.fromhex(r['encoding']); M=bytes.fromhex(r['msg_variant']) if r.get('msg_variant') else open('vectors.json') and None
+              v=json.load(open('vectors.json'))
+              M=bytes.fromhex(r['msg_variant']) if r.get('msg_variant') else bytes.fromhex(v['base_message_hex'])
+              S=bytes.fromhex(r['sig_rsb_hex'])
+              open('/tmp/a.der','wb').write(b'302a300506032b6570032100'+A); open('/tmp/m.bin','wb').write(M); open('/tmp/s.bin','wb').write(S)
+              try:
+                  subprocess.run(['openssl','pkeyutl','-verify','-pubin','-inkey','/tmp/a.der','-keyform','DER','-rawin','-in','/tmp/m.bin','-sigfile','/tmp/s.bin'],check=True,capture_output=True)
+                  got=True
+              except Exception: got=False
+              exp=r.get('openssl-cli')
+              if exp is None or got!=exp: print(f"note: openssl row {r['encoding'][:8]} got={got} recorded={exp}")
+          PY

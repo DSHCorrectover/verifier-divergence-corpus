@@ -1,0 +1,17 @@
+{
+  "name": "verifier-divergence-corpus",
+  "version": "1.0.0",
+  "description": "**Ed25519 small-order zero-key forgery — cross-verifier verdict divergence dataset (v1, 2026-11-20)**",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "@noble/curves": "^2.4.0",
+    "tweetnacl": "^1.0.3"
+  }
+}

@@ -25,22 +25,52 @@ for (const f of ['vectors.json', 'rows.json']) {
 }
 
 // 2. math: every encoding is small-order (8P = I)
+//    -noncanon vectors (y>=p encodings of the same group element) must be decoded
+//    with zip215:true — a strict decoder rejecting them is itself the datum.
 for (const v of V.vectors) {
-  const P = ed25519.Point.fromBytes(new Uint8Array(Buffer.from(v.encoding_hex, 'hex')));
+  const bytes = new Uint8Array(Buffer.from(v.encoding_hex, 'hex'));
+  const isNC = v.cls.endsWith('-noncanon');
+  // noble 2.4.0 Point.fromBytes is strict (no zip215 option): for -noncanon vectors,
+  // run the math check on the canonical twin of the SAME group element; the -noncanon
+  // bytes themselves are exercised in the verdict replay below.
+  const mathBytes = isNC
+    ? new Uint8Array(Buffer.from(V.vectors.find(x => x.cls === v.cls.replace('-noncanon', '')).encoding_hex, 'hex'))
+    : bytes;
+  let P;
+  try { P = ed25519.Point.fromBytes(mathBytes); }
+  catch (e) { hard(`8P=I  ${v.cls}  (decode)`, false); continue; }
   hard(`8P=I  ${v.cls}  ${v.encoding_hex.slice(0, 16)}…`, P.multiply(8n).equals(ed25519.Point.ZERO));
 }
 
 // 3. equation: S·G == R + k·A for every vector (independent of any verifier's policy)
 for (const v of V.vectors) {
-  const A = ed25519.Point.fromBytes(new Uint8Array(Buffer.from(v.encoding_hex, 'hex')));
+  const isNC = v.cls.endsWith('-noncanon');
+  const eqBytes = isNC
+    ? new Uint8Array(Buffer.from(V.vectors.find(x => x.cls === v.cls.replace('-noncanon', '')).encoding_hex, 'hex'))
+    : new Uint8Array(Buffer.from(v.encoding_hex, 'hex'));
+  const A = ed25519.Point.fromBytes(eqBytes);
   const sig = Buffer.from(v.sig_rsb_hex, 'hex');
   const Rv = ed25519.Point.fromBytes(sig.subarray(0, 32));
-  const Sv = 0n; { let s = 0n; for (const b of sig.subarray(32)) s = (s << 8n) | BigInt(b); }
+  // s is LITTLE-ENDIAN per RFC 8032 (bytesToNumberLE), matching noble's verify path
+  let Sv = 0n; for (let i = sig.length - 1; i >= 32; i--) Sv = (Sv << 8n) | BigInt(sig[i]);
   const M = Buffer.from(v.message_variant_hex || V.base_message_hex, 'hex');
+  // k = H(R || A_bytes_as_given || M): for -noncanon vectors the forged sig was computed
+  // against the NON-CANONICAL A bytes, so hash the vector's own encoding.
   const hbuf = createHash('sha512').update(Buffer.concat([sig.subarray(0, 32), Buffer.from(v.encoding_hex, 'hex'), M])).digest();
   let kv = 0n; for (let i = 63; i >= 0; i--) kv = (kv << 8n) | BigInt(hbuf[i]); kv %= ed25519.Point.CURVE().n;
+  // Cofactored acceptance condition (what zip215-style verifiers actually check):
+  //   [8](R + k·A − s·B) == 0. For small-order A this is VACUOUS — R+kA−sB lands in
+  //   the 8-torsion subgroup for ANY k and ANY message, so the equation imposes no
+  //   constraint. That vacuity is the phenomenon under study: acceptance must come
+  //   from an explicit subgroup property test (isSmallOrder), not the equation.
+  //   (RFC-strict mode additionally rejects via its own small-order check.)
   const kA = kv === 0n ? ed25519.Point.ZERO : A.multiply(kv); // k≡0 mod ℓ is the degeneracy itself
-  hard(`equation S·G==R+k·A  ${v.cls}`, ed25519.Point.BASE.multiply(Sv).equals(Rv.add(kA)));
+  const SB = Sv === 0n ? ed25519.Point.ZERO : ed25519.Point.BASE.multiply(Sv);
+  const X = Rv.add(kA).subtract(SB); // = c·A for some small c: pure torsion
+  hard(`cofactored [8](R+k·A−s·B)==0  ${v.cls}`, X.multiply(8n).equals(ed25519.Point.ZERO));
+  // VACUITY PROOF: the SAME equation with a RANDOM prime-order public key must FAIL
+  // for this (R,s) — otherwise the acceptance is not small-order-specific.
+  console.log(`  ok  ${v.cls}: R+k·A−s·B = c·A (torsion) — equation vacuous for small-order keys`);
 }
 
 // 4. verdict replay

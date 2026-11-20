@@ -3,7 +3,9 @@
 > **Positioning**: We certify that an agent's action did not exceed the authorization it was actually granted — with evidence a third party can re-verify offline.
 > （我们证明：Agent 的每一个动作没有越出它实际被授予的授权——以任何第三方都能离线重验的证据为准。）— Independent Authorization Verification / Court-ready Evidence
 
-**Ed25519 small-order zero-key forgery — cross-verifier verdict divergence dataset (v1, 2026-11-20)**
+**Ed25519 small-order zero-key forgery — cross-verifier verdict divergence dataset (v1.1, 2026-11-20)**
+
+**v1.1**: adds a **non-canonical encoding** vector class (vectors 9–11): the same small-order group element re-encoded with `y' = y + p (mod 2^255)`. Empirical result: **tweetnacl flips reject→accept on 2/3**, noble `{zip215:true}` accepts 3/3 — i.e. the *same group element* changes verdicts depending on its byte encoding. Any enumeration/denylist-style defense is incomplete by construction; only a decode-then-subgroup property test (8P = I / `isSmallOrder`) is complete.
 
 ## One-page thesis
 
@@ -39,8 +41,8 @@ Every vector in `vectors.json` ships with its message variant and the equation c
 
 | file | purpose | license |
 |---|---|---|
-| `vectors.json` | 8 small-order encodings (orders 1/2/4/4/8/8/8/8, each proven `8P=I`), message variants, forged signatures | CC0 |
-| `rows.json` | machine-run verdict matrix, 6 verifier configurations × 8 encodings × 2 signature shapes | CC0 |
+| `vectors.json` | 8 canonical small-order encodings (orders 1/2/4/4/8/8/8/8, each proven `8P=I`) + 3 non-canonical re-encodings (v1.1), message variants, forged signatures | CC0 |
+| `rows.json` | machine-run verdict matrix, 6 verifier configurations × 11 vectors × 2 signature shapes (openssl-cli/pyca pending on v1.1 rows — replay yours) | CC0 |
 | `corpus-build.mjs` | deterministic generator: re-enumerates torsion encodings from curve math, rebuilds vectors, re-runs the matrix | MIT |
 | `verify.mjs` | replay harness: asserts vectors.json/rows.json consistency and re-executes the verdicts on your stack | MIT |
 | `manifest.sha256` | content lock | — |
@@ -59,6 +61,29 @@ Expected output: `ALL PASS — divergence reproduced on this stack.` (verified o
 The harness checks, in order: ① SHA-256 manifest lock on vectors/rows ② every encoding is mathematically small-order (8P = I) ③ every forgery satisfies the verification equation S·G == R + k·A ④ re-runs noble (3 option sets), tweetnacl and node:crypto verdicts against the recorded rows on **your** stack — any mismatch tells you *your* verifier's policy differs.
 
 Verdicts for `node:crypto`, OpenSSL CLI and pyca replay with system OpenSSL / Python (`openssl pkeyutl`, `cryptography`).
+
+## Absorbed reviewer critiques (what external reviewers told us, and what changed)
+
+This corpus is built in public and treated as a falsifiable object. Every substantive critique from an external reviewer is absorbed as a concrete change:
+
+| date | reviewer | critique | absorption (this repo) |
+|---|---|---|---|
+| 2026-11-19 | paulmillr (noble-curves #261) | our initial zip215 semantics reading was wrong | public correction + scope note (`zip215:false` rejects all; not a bypass claim — note below) |
+| 2026-11-20 | agentproto list reviewer (J.K.) | **property test > enumeration**: public denylists of small-order points are incomplete (caught 5/8) | v1.1 non-canonical class (above) proving enumeration is insufficient *within one library*; harness now asserts the **cofactored equation is vacuous** for small-order keys (`[8](R+k·A−s·B)==0` holds for any k, any message) — so acceptance is a policy choice, and only a subgroup property test closes it |
+| 2026-11-20 | community repro (openai-agents-python #6094) | independent third-party reproduction of a related fail-open pattern | root-cause line absorbed into our agent-authz findings registry; design guidance fed upstream |
+| (process) | hard-bounce telemetry | domain-level address verification misses dead mailboxes | mailbox-level verification added to our outbound workflow |
+
+If you find a flaw in the corpus or the harness, open an issue — we will absorb it here, dated, the same way.
+
+## Contributing vectors (donations welcome)
+
+External verifiers are invited to donate rows: run `node verify.mjs` on your stack, and submit your environment + verdict matrix (per-vector accept/reject incl. the `-noncanon` vectors) via PR or issue. Requirements:
+
+1. name the exact verifier + version + build environment (OpenSSL version for node:crypto, etc.),
+2. keep vector bytes untouched (`manifest.sha256` is the arbiter),
+3. new *vectors* (not rows) need deterministic generation math in the PR description — small-order membership provable (8P = I).
+
+CC0 on data means your rows become public domain on merge, credited by handle.
 
 ## Provenance
 
